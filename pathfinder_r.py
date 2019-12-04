@@ -59,8 +59,23 @@ def get_end(manual_input=False, success_rate=0.01):
         return random_success(success_rate)
 
 def find_path(maze, start, invalid, robot_pos, path=[]):
+    """Recursively iterate through maze nodes, constructing and solving a graph.
+
+    Parameters:
+        maze:       The nested dictionary which contains the tuple coordinates of each node
+                    as the keys, and a dictionary which contains information about
+                    adjacent nodes
+        start:      The starting node of the maze--this represents the current node with
+                    each recursive call
+        invalid:    The list containing all nodes that lead to dead-ends 
+        robot_pos:  The current position of the physical robot
+        path:       The list of nodes that the robot has traveled through
+
+    Returns:
+        The path to the end of the maze, if it exists, and None otherwise
+    """
+
     for node in maze[start]:
-        sleep(0.5)
         path = path + [start]
         print_array(array)
         print_maze(maze, start, path)
@@ -72,7 +87,7 @@ def find_path(maze, start, invalid, robot_pos, path=[]):
             if len(path) >= 2:
                 move(path[-2], robot_pos)
             break
-        #get surrounding nodes
+
         for direction in maze[start]:
             nearby_node = maze[start][direction]
             if not nearby_node:

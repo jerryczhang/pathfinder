@@ -58,6 +58,16 @@ def get_end(manual_input=False, success_rate=0.01):
     else:
         return random_success(success_rate)
 
+def scan(direction, manual_input=False, sensor_input=False, success_rate=0.4):
+    """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
+    if sensor_input:
+        input("Scan " + direction)
+        return distances.get_distance() >= 10
+    elif manual_input:
+        return input(direction + " valid (T/F):").lower() == 't'
+    else:
+        return random_succeses(success_rate)
+    
 def find_path(maze, start, invalid, robot_pos, path=[]):
     """Recursively iterate through maze nodes, constructing and solving a graph.
 
@@ -74,86 +84,76 @@ def find_path(maze, start, invalid, robot_pos, path=[]):
     Returns:
         The path to the end of the maze, if it exists, and None otherwise
     """
+    path = path + [start]
+    print_array(array)
+    print_maze(maze, start, path)
+    move(path[-1], robot_pos)
+    if get_end(manual_input=True):
+        return path 
+    if len(path) >= 2 and path[-1] == path[-2]:
+        invalid.append(path.pop())
+        if len(path) >= 2:
+            move(path[-2], robot_pos)
+        return
 
-    for node in maze[start]:
-        path = path + [start]
-        print_array(array)
-        print_maze(maze, start, path)
-        move(path[-1], robot_pos)
-        if get_end(manual_input=True):
-            return path 
-        if len(path) >= 2 and path[-1] == path[-2]:
-            invalid.append(path.pop())
-            if len(path) >= 2:
-                move(path[-2], robot_pos)
-            break
-
-        for direction in maze[start]:
-            nearby_node = maze[start][direction]
-            if not nearby_node:
-                nearby_node_x = start[0]
-                nearby_node_y = start[1]
-                """input("Scan " + direction)
-                distance = distances.get_distance()
-                if distance >= 10:
-                    valid = 't'
-                else:
-                    valid = 'f'"""
-                """valid = input(direction + " valid (T/F):").lower()"""
-                #random input
-                valid = random_success(.75)
-                if direction == 'n' and start[1] == 13:
-                    valid = False
-                elif direction == 'e' and start[0] == 13:
-                    valid = False
-                elif direction == 's' and start[1] == 10:
-                    valid = False
-                elif direction == 'w' and start[0] == 10:
-                    valid = False
-                #get coordinates for nearby nodes
-                if valid == True:
+    for direction in maze[start]:
+        nearby_node = maze[start][direction]
+        if not nearby_node:
+            nearby_node_x = start[0]
+            nearby_node_y = start[1]
+            valid = scan(direction, manual_input=True)
+            if direction == 'n' and start[1] == 13:
+                valid = False
+            elif direction == 'e' and start[0] == 13:
+                valid = False
+            elif direction == 's' and start[1] == 10:
+                valid = False
+            elif direction == 'w' and start[0] == 10:
+                valid = False
+            #get coordinates for nearby nodes
+            if valid == True:
+                if direction == 'n':
+                    nearby_node_y += 1
+                elif direction == 'e':
+                    nearby_node_x += 1
+                elif direction == 's':
+                    nearby_node_y -= 1
+                elif direction == 'w':
+                    nearby_node_x -= 1
+                nearby_node = (nearby_node_x, nearby_node_y)
+                maze[start][direction] = nearby_node
+                empty = {'n': False, 'e': False, 's': False, 'w': False, reverse(direction): path[-1]}
+                #create new node
+                maze[nearby_node] = empty
+                #update array
+                array_x = {10:1, 11:3, 12:5, 13:7}
+                array_y = {10:7, 11:5, 12:3, 13:1}
+                array_coor_x = array_x[start[0]]
+                array_coor_y = array_y[start[1]]
+                if len(path) > 1:
+                    prev_array_x = array_x[path[-2][0]]
+                    prev_array_y = array_y[path[-2][1]]
+                    array[prev_array_y][prev_array_x] = add_color(' ', "Yellow", highlight = True)
+                    array[array_coor_y][array_coor_x] = add_color(' ', "Green", highlight = True)
+                for direction in maze[start]:
+                    if maze[start][direction] == False:
+                        wall = add_color(' ', "Red", highlight  = True)
+                    else:
+                        wall = add_color(' ', "Teal", highlight = True)
                     if direction == 'n':
-                        nearby_node_y += 1
+                        array[array_coor_y - 1][array_coor_x] = wall
                     elif direction == 'e':
-                        nearby_node_x += 1
+                        array[array_coor_y][array_coor_x + 1] = wall
                     elif direction == 's':
-                        nearby_node_y -= 1
+                        array[array_coor_y + 1][array_coor_x] = wall
                     elif direction == 'w':
-                        nearby_node_x -= 1
-                    nearby_node = (nearby_node_x, nearby_node_y)
-                    maze[start][direction] = nearby_node
-                    empty = {'n': False, 'e': False, 's': False, 'w': False, reverse(direction): path[-1]}
-                    #create new node
-                    maze[nearby_node] = empty
-                    #update array
-                    array_x = {10:1, 11:3, 12:5, 13:7}
-                    array_y = {10:7, 11:5, 12:3, 13:1}
-                    array_coor_x = array_x[start[0]]
-                    array_coor_y = array_y[start[1]]
-                    if len(path) > 1:
-                        prev_array_x = array_x[path[-2][0]]
-                        prev_array_y = array_y[path[-2][1]]
-                        array[prev_array_y][prev_array_x] = add_color(' ', "Yellow", highlight = True)
-                        array[array_coor_y][array_coor_x] = add_color(' ', "Green", highlight = True)
-                    for direction in maze[start]:
-                        if maze[start][direction] == False:
-                            wall = add_color(' ', "Red", highlight  = True)
-                        else:
-                            wall = add_color(' ', "Teal", highlight = True)
-                        if direction == 'n':
-                            array[array_coor_y - 1][array_coor_x] = wall
-                        elif direction == 'e':
-                            array[array_coor_y][array_coor_x + 1] = wall
-                        elif direction == 's':
-                            array[array_coor_y + 1][array_coor_x] = wall
-                        elif direction == 'w':
-                            array[array_coor_y][array_coor_x - 1] = wall    
-        #find next
-        for direction in maze[start]:
-            if maze[start][direction] and maze[start][direction] not in path and maze[start][direction] not in invalid:
-                newpath = find_path(maze, maze[start][direction], invalid, robot_pos, path)
-                if newpath:
-                    return newpath
+                        array[array_coor_y][array_coor_x - 1] = wall    
+    #find next
+    for direction in maze[start]:
+        if maze[start][direction] and maze[start][direction] not in path and maze[start][direction] not in invalid:
+            newpath = find_path(maze, maze[start][direction], invalid, robot_pos, path)
+            if newpath:
+                return newpath
     return None
 
 array = construct_maze()

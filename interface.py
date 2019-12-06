@@ -1,4 +1,4 @@
-#TODO implement numpy array
+#TODO implement numpy array, unicode formatting
 from color import add_color
 import sys
 
@@ -35,14 +35,11 @@ def update_display(maze, start, path, display):
     display_coor = (display_x[start[0]], display_y[start[1]])
     for direction in maze[start]:
         if maze[start][direction] == "invalid":
-            wall = add_color(' ', "Red", highlight  = True)
-        else:
-            wall = add_color(' ', "Teal", highlight = True)
-        if direction == 'n':
-            display[display_coor[1] - 1][display_coor[0]] = wall
-        elif direction == 'e':
-            display[display_coor[1]][display_coor[0] + 1] = wall
-        elif direction == 's':
-            display[display_coor[1] + 1][display_coor[0]] = wall
-        elif direction == 'w':
-            display[display_coor[1]][display_coor[0] - 1] = wall    
+            if direction == 'n':
+                display[display_coor[1] - 1][display_coor[0]] = "--"
+            elif direction == 'e':
+                display[display_coor[1]][display_coor[0] + 1] = '|'
+            elif direction == 's':
+                display[display_coor[1] + 1][display_coor[0]] = "--"
+            elif direction == 'w':
+                display[display_coor[1]][display_coor[0] - 1] = '|'

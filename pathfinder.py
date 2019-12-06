@@ -1,8 +1,13 @@
-#TODO refactor, documentation, array display
+#TODO array display, spatial awareness
 from color import add_color
 from random import randrange
 from time import sleep
 import sys
+import enum
+
+MANUAL_INPUT = True
+SENSOR_INPUT = False
+RANDOM_INPUT = False
 
 def construct_maze():
     """Constructs a 10 by 10 array representation of the blank maze."""
@@ -66,8 +71,40 @@ def scan(direction, manual_input=False, sensor_input=False, success_rate=0.75):
         return input(direction + " valid (T/F):").lower() == 't'
     else:
         return random_success(success_rate)
+
+def get_nearby_node(direction, current_node):
+    """Get the coordinates of the adjacent node."""
+    adj = list(current_node)
+    if direction == 'n':
+        adj[1] += 1
+    elif direction == 'e':
+        adj[0] += 1
+    elif direction == 's':
+        adj[1] -= 1
+    elif direction == 'w':
+        adj[0] -= 1
+    return tuple(adj) 
     
-def find_path(maze, start, robot_pos, path=[]):
+def update_array(maze, start, path, array):
+    """Update the graphical array."""
+    array_x = {10:1, 11:3, 12:5, 13:7}
+    array_y = {10:7, 11:5, 12:3, 13:1}
+    array_coor = (array_x[start[0]], array_y[start[1]])
+    for direction in maze[start]:
+        if maze[start][direction] == "invalid":
+            wall = add_color(' ', "Red", highlight  = True)
+        else:
+            wall = add_color(' ', "Teal", highlight = True)
+        if direction == 'n':
+            array[array_coor[1] - 1][array_coor[0]] = wall
+        elif direction == 'e':
+            array[array_coor[1]][array_coor[0] + 1] = wall
+        elif direction == 's':
+            array[array_coor[1] + 1][array_coor[0]] = wall
+        elif direction == 'w':
+            array[array_coor[1]][array_coor[0] - 1] = wall    
+
+def find_path(maze, start, robot_pos, path, array):
     """Recursively iterate through maze nodes, constructing and solving a graph.
 
     Parameters:
@@ -86,90 +123,53 @@ def find_path(maze, start, robot_pos, path=[]):
     print_array(array)
     print_maze(maze, start, path)
     move(path[-1], robot_pos)
-    if get_end(manual_input=True):
+    if get_end(manual_input=MANUAL_INPUT, sensor_input=SENSOR_INPUT):
         return path 
 
     for direction in maze[start]:
         nearby_node = maze[start][direction]
-        if nearby_node == None:
-            nearby_node_x = start[0]
-            nearby_node_y = start[1]
-            valid = scan(direction, manual_input=True)
-            if direction == 'n' and start[1] == 13:
-                valid = False
-            elif direction == 'e' and start[0] == 13:
-                valid = False
-            elif direction == 's' and start[1] == 10:
-                valid = False
-            elif direction == 'w' and start[0] == 10:
-                valid = False
-            #get coordinates for nearby nodes
-            if valid == True:
-                if direction == 'n':
-                    nearby_node_y += 1
-                elif direction == 'e':
-                    nearby_node_x += 1
-                elif direction == 's':
-                    nearby_node_y -= 1
-                elif direction == 'w':
-                    nearby_node_x -= 1
-                nearby_node = (nearby_node_x, nearby_node_y)
-                maze[start][direction] = nearby_node
-                empty = {'n': None, 'e': None, 's': None, 'w': None, reverse(direction): path[-1]}
-                #create new node
-                maze[nearby_node] = empty
+        if nearby_node == "unknown":
+            valid = scan(direction, manual_input = MANUAL_INPUT, sensor_input = SENSOR_INPUT)
+            if valid:
+                adj = get_nearby_node(direction, start)
+                maze[start][direction] = adj
+                if adj not in maze:
+                    maze[adj] = {
+                            'n': "unknown", 
+                            'e': "unknown", 
+                            's': "unknown", 
+                            'w': "unknown", 
+                            reverse(direction): path[-1]
+                    }
             else:
-                maze[start][direction] = False
-            array_x = {10:1, 11:3, 12:5, 13:7}
-            array_y = {10:7, 11:5, 12:3, 13:1}
-            array_coor_x = array_x[start[0]]
-            array_coor_y = array_y[start[1]]
-            if len(path) > 1:
-                prev_array_x = array_x[path[-2][0]]
-                prev_array_y = array_y[path[-2][1]]
-                array[prev_array_y][prev_array_x] = add_color(' ', "Yellow", highlight = True)
-                array[array_coor_y][array_coor_x] = add_color(' ', "Green", highlight = True)
-            for direction in maze[start]:
-                if maze[start][direction] == False:
-                    wall = add_color(' ', "Red", highlight  = True)
-                else:
-                    wall = add_color(' ', "Teal", highlight = True)
-                if direction == 'n':
-                    array[array_coor_y - 1][array_coor_x] = wall
-                elif direction == 'e':
-                    array[array_coor_y][array_coor_x + 1] = wall
-                elif direction == 's':
-                    array[array_coor_y + 1][array_coor_x] = wall
-                elif direction == 'w':
-                    array[array_coor_y][array_coor_x - 1] = wall    
-    #find next
+                maze[start][direction] = "invalid"
+        update_array(maze, start, path, array)
     for direction in maze[start]:
-        if maze[start][direction] and maze[start][direction] not in path:
-            newpath = find_path(maze, maze[start][direction], robot_pos, path)
+        if maze[start][direction] != "invalid" and maze[start][direction] not in path:
+            newpath = find_path(maze, maze[start][direction], robot_pos, path, array)
             if newpath:
                 return newpath
             else:
                 move(path[-1], robot_pos)
     return None
 
-array = construct_maze()
-maze = {(10, 10):
-    {
-        'n': None,
-        'e': None,
-        's': None,
-        'w': None,
+def main():
+    """Initializes maze and array, then calls find_path."""
+    array = construct_maze()
+    maze = {(10, 10):
+        {
+            'n': "unknown",
+            'e': "unknown",
+            's': "unknown",
+            'w': "unknown",
+        }
     }
-}
-path = find_path(maze, (10,10), [10, 10])
-print("=======================")
-if path:
-    print("Finished, path: " + str(path))
-else:
-    print("Impossible maze")
+    path = find_path(maze, (10,10), [10, 10], [], array)
+    print(''.center(20, '='))
+    if path:
+        print("Finished, path: " + str(path))
+    else:
+        print("Impossible maze")
 
-#Solve Second Time
-"""input("Ready?")
-RobotPos = [10,10]
-for Tile in path:
-    Move(Tile, RobotPos)"""
+if __name__ == '__main__':
+    main()

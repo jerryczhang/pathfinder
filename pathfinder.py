@@ -1,39 +1,10 @@
-#TODO array display, spatial awareness
-from color import add_color
+#TODO spatial awareness
+import interface
 from random import randrange
-from time import sleep
-import sys
-import enum
 
 MANUAL_INPUT = True
 SENSOR_INPUT = False
 RANDOM_INPUT = False
-
-def construct_maze():
-    """Constructs a 10 by 10 array representation of the blank maze."""
-    row = []
-    array = []
-    for _ in range(1, 10):
-        blank = str(add_color(' ', "Black", highlight = True))
-        row.append(blank)
-    for _ in range(1, 10):
-        array.append(list(row))
-    return array
-
-def print_array(array):
-    """Print the maze in graphical form with color formatting."""
-    for row in array:
-        for item in row:
-            sys.stdout.write(item)
-        sys.stdout.write('\n')
-
-def print_maze(maze, start, path):
-    """Print the text representation of the maze.""" 
-    print(''.center(20, '='))
-    print("Current Node: " + str(start))
-    for key, value in maze.items():
-        print(str(key) + ' : ' + str(value))
-    print("path: " + str(path))
 
 def move(position, robot_pos):
     """Moves the robot to position from robot_pos."""
@@ -85,26 +56,7 @@ def get_nearby_node(direction, current_node):
         adj[0] -= 1
     return tuple(adj) 
     
-def update_array(maze, start, path, array):
-    """Update the graphical array."""
-    array_x = {10:1, 11:3, 12:5, 13:7}
-    array_y = {10:7, 11:5, 12:3, 13:1}
-    array_coor = (array_x[start[0]], array_y[start[1]])
-    for direction in maze[start]:
-        if maze[start][direction] == "invalid":
-            wall = add_color(' ', "Red", highlight  = True)
-        else:
-            wall = add_color(' ', "Teal", highlight = True)
-        if direction == 'n':
-            array[array_coor[1] - 1][array_coor[0]] = wall
-        elif direction == 'e':
-            array[array_coor[1]][array_coor[0] + 1] = wall
-        elif direction == 's':
-            array[array_coor[1] + 1][array_coor[0]] = wall
-        elif direction == 'w':
-            array[array_coor[1]][array_coor[0] - 1] = wall    
-
-def find_path(maze, start, robot_pos, path, array):
+def find_path(maze, start, robot_pos, path, display):
     """Recursively iterate through maze nodes, constructing and solving a graph.
 
     Parameters:
@@ -120,8 +72,8 @@ def find_path(maze, start, robot_pos, path, array):
         The path to the end of the maze, if it exists, and None otherwise
     """
     path = path + [start]
-    print_array(array)
-    print_maze(maze, start, path)
+    interface.print_display(display)
+    interface.print_maze(maze, start, path)
     move(path[-1], robot_pos)
     if get_end(manual_input=MANUAL_INPUT, sensor_input=SENSOR_INPUT):
         return path 
@@ -143,10 +95,10 @@ def find_path(maze, start, robot_pos, path, array):
                     }
             else:
                 maze[start][direction] = "invalid"
-        update_array(maze, start, path, array)
+        interface.update_display(maze, start, path, display)
     for direction in maze[start]:
         if maze[start][direction] != "invalid" and maze[start][direction] not in path:
-            newpath = find_path(maze, maze[start][direction], robot_pos, path, array)
+            newpath = find_path(maze, maze[start][direction], robot_pos, path, display)
             if newpath:
                 return newpath
             else:
@@ -154,8 +106,8 @@ def find_path(maze, start, robot_pos, path, array):
     return None
 
 def main():
-    """Initializes maze and array, then calls find_path."""
-    array = construct_maze()
+    """Initializes maze and display, then calls find_path."""
+    display = interface.construct_display()
     maze = {(10, 10):
         {
             'n': "unknown",
@@ -164,7 +116,7 @@ def main():
             'w': "unknown",
         }
     }
-    path = find_path(maze, (10,10), [10, 10], [], array)
+    path = find_path(maze, (10,10), [10, 10], [], display)
     print(''.center(20, '='))
     if path:
         print("Finished, path: " + str(path))

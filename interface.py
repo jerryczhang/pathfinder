@@ -1,16 +1,14 @@
 #TODO implement numpy array, unicode formatting
 from color import add_color
+import numpy as np
 import sys
+
+BLANK = "\033[40m  \033[0m"
+WALL = "\033[47m  \033[0m"
 
 def construct_display():
     """Constructs a 10 by 10 display representation of the blank maze."""
-    row = []
-    display = []
-    for _ in range(1, 10):
-        blank = str(add_color(' ', "Black", highlight = True))
-        row.append(blank)
-    for _ in range(1, 10):
-        display.append(list(row))
+    display = np.full((9,9), BLANK)
     return display 
 
 def print_display(display):
@@ -36,10 +34,13 @@ def update_display(maze, start, path, display):
     for direction in maze[start]:
         if maze[start][direction] == "invalid":
             if direction == 'n':
-                display[display_coor[1] - 1][display_coor[0]] = "--"
+                display[display_coor[1] - 1][display_coor[0]] = WALL
             elif direction == 'e':
-                display[display_coor[1]][display_coor[0] + 1] = '|'
+                display[display_coor[1]][display_coor[0] + 1] = WALL
             elif direction == 's':
-                display[display_coor[1] + 1][display_coor[0]] = "--"
+                display[display_coor[1] + 1][display_coor[0]] = WALL
             elif direction == 'w':
-                display[display_coor[1]][display_coor[0] - 1] = '|'
+                display[display_coor[1]][display_coor[0] - 1] = WALL 
+    for x in [-1, 1]:
+        for y in [-1, 1]:
+            display[display_coor[1]+x][display_coor[0]+y] = WALL

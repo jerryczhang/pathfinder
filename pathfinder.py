@@ -47,11 +47,11 @@ def get_nearby_node(direction, current_node):
     """Get the coordinates of the adjacent node."""
     adj = list(current_node)
     if direction == 'n':
-        adj[1] += 1
+        adj[1] -= 1
     elif direction == 'e':
         adj[0] += 1
     elif direction == 's':
-        adj[1] -= 1
+        adj[1] += 1
     elif direction == 'w':
         adj[0] -= 1
     return tuple(adj) 
@@ -72,7 +72,8 @@ def find_path(maze, start, robot_pos, path, display):
         The path to the end of the maze, if it exists, and None otherwise
     """
     path = path + [start]
-    interface.print_display(display)
+    display.update_display(path, maze)
+    display.print_display()
     interface.print_maze(maze, start, path)
     move(path[-1], robot_pos)
     if get_end(manual_input=MANUAL_INPUT, sensor_input=SENSOR_INPUT):
@@ -95,7 +96,7 @@ def find_path(maze, start, robot_pos, path, display):
                     }
             else:
                 maze[start][direction] = "invalid"
-        interface.update_display(maze, start, path, display)
+    display.update_display(path, maze)
     for direction in maze[start]:
         if maze[start][direction] != "invalid" and maze[start][direction] not in path:
             newpath = find_path(maze, maze[start][direction], robot_pos, path, display)
@@ -107,8 +108,8 @@ def find_path(maze, start, robot_pos, path, display):
 
 def main():
     """Initializes maze and display, then calls find_path."""
-    display = interface.construct_display()
-    maze = {(10, 10):
+    display = interface.Display()
+    maze = {(0, 0):
         {
             'n': "unknown",
             'e': "unknown",
@@ -116,7 +117,7 @@ def main():
             'w': "unknown",
         }
     }
-    path = find_path(maze, (10,10), [10, 10], [], display)
+    path = find_path(maze, (0,0), [0, 0], [], display)
     print(''.center(20, '='))
     if path:
         print("Finished, path: " + str(path))

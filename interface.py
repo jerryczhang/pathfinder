@@ -1,14 +1,15 @@
-#TODO implement numpy array, unicode formatting
-from color import add_color
 import numpy as np
 import sys
 
 class Display:
 
     def __init__(self):
+        """Initialize the text blocks used for display, as well as the np array."""
         self.BLANK = "\033[40m  \033[0m"
         self.WALL = "\033[47m  \033[0m"
         self.CURR = "\033[40m[]\033[0m"
+        self.START = "\033[40m<>\033[0m"
+        self.PATH = "\033[40m::\033[0m"
         self.display = np.full((3, 3), self.BLANK)
         self.x_offset = 1
         self.y_offset = 1
@@ -21,6 +22,7 @@ class Display:
             sys.stdout.write('\n')
 
     def expand(self, direction):
+        """Expand the np array in a specified direction."""
         (y, x) = self.display.shape
         if direction == 'n':
             self.display = np.concatenate((np.full((2, x), self.BLANK), self.display), axis=0)
@@ -33,45 +35,50 @@ class Display:
             self.display = np.concatenate((np.full((y, 2), self.BLANK), self.display), axis=1)
             self.x_offset += 2
 
+    def add_element(self, node, element, offset_dirs=None):
+        """Add maze coordinates node to the display, offset in directions offset_dirs."""
+        x, y = self.transform(node)
+        if offset_dirs:
+            if 'n' in offset_dirs:
+                y -= 1
+            elif 's' in offset_dirs:
+                y += 1
+            if 'e' in offset_dirs:
+                x += 1
+            elif 'w' in offset_dirs:
+                x -= 1
+        if x > self.display.shape[1] - 1:
+            self.expand('e')
+        if y > self.display.shape[0] - 1:
+            self.expand('s')
+        if x < 0:
+            self.expand('w')
+            x += 2
+        if y < 0:
+            self.expand('n')
+            y += 2
+        self.display[y][x] = element
+
     def transform(self, node):
+        """Converts maze coordinates into array coordinates."""
         xt = 2 * node[0] + self.x_offset
         yt = 2 * node[1] + self.y_offset
         return xt, yt
 
     def update_display(self, path, maze):
         """Update the graphical array."""
-        x, y = self.transform(path[-1])
-        if x >= self.display.shape[1] - 1:
-            self.expand('e')
-        if y >= self.display.shape[0] - 1:
-            self.expand('s')
-        if x <= 0:
-            self.expand('w')
-            x += 2
-        if y <= 0:
-            self.expand('n')
-            y += 2
-        for direction in maze[path[-1]]:
-            if maze[path[-1]][direction] == "invalid":
-                if direction == 'n':
-                    self.display[y-1][x] = self.WALL
-                elif direction == 'e':
-                    self.display[y][x+1] = self.WALL
-                elif direction == 's':
-                    self.display[y+1][x] = self.WALL
-                elif direction == 'w':
-                    self.display[y][x-1] = self.WALL 
-        self.display[y][x] = self.CURR
-        if len(path) >= 2:
-            x_prev, y_prev = self.transform(path[-2])
-            self.display[y_prev][x_prev] = self.BLANK
-            for x1 in [-1, 1]:
-                for y1 in [-1, 1]:
-                    self.display[y_prev + y1][x_prev + x1] = self.WALL
-def print_maze(maze, start, path):
-    """Print the text representation of the maze.""" 
-    print(''.center(20, '='))
-    print("Current Node: " + str(start))
-    for key, value in maze.items():
-        print(str(key) + ' : ' + str(value))
-    print("path: " + str(path))
+        curr_node = path[-1]
+        for direction in maze[curr_node]:
+            if maze[curr_node][direction] == "invalid":
+                self.add_element(curr_node, self.WALL, direction)
+        for offset_dir in ['ne', 'se', 'sw', 'nw']:
+            self.add_element(curr_node, self.WALL, offset_dir)
+        for node in maze:
+            if node == path[0]:
+                self.add_element(node, self.START)
+            elif node == path[-1]:
+                self.add_element(node, self.CURR)
+            elif node in path:
+                self.add_element(node, self.PATH)
+            else:
+                self.add_element(node, self.BLANK)

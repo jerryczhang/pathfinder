@@ -19,7 +19,7 @@ def move(position, robot_pos):
         print("Robot position: " + str(robot_pos))
 
 def reverse(direction):
-    """Reverses the given compass direction (n, e, s, w)."""
+    """reverse the given compass direction (n, e, s, w)."""
     directions = ['n', 'e', 's', 'w', 'n', 'e', 's', 'w']
     return directions[directions.index(direction) + 2]
 
@@ -32,7 +32,7 @@ def get_end(manual_input=False, sensor_input=False, success_rate=0.01):
     if manual_input or sensor_input:
         return input("End? (T/F):").lower() == 't'
     else:
-        sleep(0.1)
+        sleep(10)
         return random_success(success_rate)
 
 def scan(direction, manual_input=False, sensor_input=False, success_rate=0.4):
@@ -76,6 +76,7 @@ def find_path(maze, start, robot_pos, path, display):
     path = path + [start]
     display.update_display(path, maze)
     display.print_display()
+    interface.print_maze(maze, start, path)
     move(path[-1], robot_pos)
     if get_end(manual_input=MANUAL_INPUT, sensor_input=SENSOR_INPUT):
         return path 

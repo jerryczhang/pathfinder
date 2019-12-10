@@ -1,4 +1,3 @@
-#TODO spatial awareness
 import interface
 from random import randrange
 
@@ -79,22 +78,22 @@ def find_path(maze, start, robot_pos, path, display):
         return path 
 
     for direction in maze[start]:
-        nearby_node = maze[start][direction]
-        if nearby_node == "unknown":
+        adj = get_nearby_node(direction, start)
+        if adj not in maze or maze[adj][reverse(direction)] == "unknown":
             valid = scan(direction, manual_input = MANUAL_INPUT, sensor_input = SENSOR_INPUT)
             if valid:
-                adj = get_nearby_node(direction, start)
                 maze[start][direction] = adj
-                if adj not in maze:
-                    maze[adj] = {
-                            'n': "unknown", 
-                            'e': "unknown", 
-                            's': "unknown", 
-                            'w': "unknown", 
-                            reverse(direction): path[-1]
-                    }
+                maze[adj] = {
+                        'n': "unknown", 
+                        'e': "unknown", 
+                        's': "unknown", 
+                        'w': "unknown", 
+                        reverse(direction): path[-1]
+                }
             else:
                 maze[start][direction] = "invalid"
+        elif maze[adj][reverse(direction)] == "invalid":
+            maze[start][direction] = "invalid"
         interface.update_display(maze, start, path, display)
     for direction in maze[start]:
         if maze[start][direction] != "invalid" and maze[start][direction] not in path:

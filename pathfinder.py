@@ -12,7 +12,6 @@ def move(position, robot_pos):
     ydist = position[1] - robot_pos[1]
     robot_pos[0] += xdist
     robot_pos[1] += ydist
-    print("Robot position: " + str(robot_pos))
 
 def reverse(direction):
     """Reverses the given compass direction (n, e, s, w)."""
@@ -23,13 +22,10 @@ def random_success(rate):
     """Returns true with the frequency provided by rate."""
     return randint(1, 100) <= rate * 100
 
-def get_end(path, maze, success_rate=0.01):
-    """Get input for whether the robot is at the end of the maze."""
-    if MANUAL_INPUT or SENSOR_INPUT:
-        return input("End? (T/F):").lower() == 't'
-    else:
-        sleep(0.1)
-        return random_success(success_rate)
+def get_end():
+    xend = input("Enter x-coordinate of end: ")
+    yend = input("Enter y-coordinate of end: ")
+    return (int(xend), int(yend))
 
 def scan(direction, success_rate=0.4):
     """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
@@ -41,7 +37,7 @@ def scan(direction, success_rate=0.4):
     else:
         return random_success(success_rate)
 
-def get_nearby_node(direction, current_node):
+def get_nearby_node(current_node, direction):
     """Get the coordinates of the adjacent node."""
     adj = list(current_node)
     if direction == 'n':
@@ -53,8 +49,8 @@ def get_nearby_node(direction, current_node):
     elif direction == 'w':
         adj[0] -= 1
     return tuple(adj) 
-    
-def find_path(maze, start, robot_pos, path, display):
+
+def find_path(maze, start, end, robot_pos, display, path=[], invalid=[]):
     """Recursively iterate through maze nodes, constructing and solving a graph.
 
     Parameters:
@@ -70,16 +66,18 @@ def find_path(maze, start, robot_pos, path, display):
     Returns:
         The path to the end of the maze, if it exists, or None otherwise
     """
+    if RANDOM_INPUT:
+        sleep(0.1)
     path = path + [start]
-    display.update_display(path, maze)
+    display.update_display(maze, path, invalid)
     display.print_display()
     move(path[-1], robot_pos)
-    if get_end(path, maze):
+    if start == end:
         return path 
 
     for direction in maze[start]:
         if maze[start][direction] == "unknown":
-            adj = get_nearby_node(direction, start)
+            adj = get_nearby_node(start, direction)
             if adj not in maze or maze[adj][reverse(direction)] == "unknown":
                 valid = scan(direction)
                 if valid:
@@ -97,13 +95,18 @@ def find_path(maze, start, robot_pos, path, display):
                 maze[start][direction] = "invalid"
             else:
                 maze[start][direction] = adj
-    display.update_display(path, maze)
+    display.update_display(maze, path, invalid)
     for direction in maze[start]:
-        if maze[start][direction] != "invalid" and maze[start][direction] not in path:
-            newpath = find_path(maze, maze[start][direction], robot_pos, path, display)
+        if (
+            maze[start][direction] != "invalid" 
+            and maze[start][direction] not in path 
+            and maze[start][direction] not in invalid
+        ):
+            newpath = find_path(maze, maze[start][direction], end, robot_pos, display, path, invalid)
             if newpath:
                 return newpath
             else:
+                invalid.append(maze[start][direction])
                 move(path[-1], robot_pos)
     return None
 
@@ -118,7 +121,7 @@ def main():
             'w': "unknown",
         }
     }
-    path = find_path(maze, (0,0), [0, 0], [], display)
+    path = find_path(maze, (0,0), get_end(), [0, 0], display)
 
     print(''.center(20, '='))
     if path:

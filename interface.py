@@ -10,6 +10,7 @@ class Display:
         self.CURR = "\033[40m[]\033[0m"
         self.START = "\033[40m<>\033[0m"
         self.PATH = "\033[40m::\033[0m"
+        self.INVALID = "\033[40m><\033[0m"
         self.display = np.full((3, 3), self.BLANK)
         self.x_offset = 1
         self.y_offset = 1
@@ -20,6 +21,7 @@ class Display:
             for item in row:
                 sys.stdout.write(item)
             sys.stdout.write('\n')
+        sys.stdout.write('\n')
 
     def expand(self, direction):
         """Expand the np array in a specified direction."""
@@ -65,7 +67,7 @@ class Display:
         ytransform = 2 * node[1] + self.y_offset
         return xtransform, ytransform
 
-    def update_display(self, path, maze):
+    def update_display(self, maze, path, invalid):
         """Update the graphical array."""
         curr_node = path[-1]
         for direction in maze[curr_node]:
@@ -80,5 +82,7 @@ class Display:
                 self.add_element(node, self.CURR)
             elif node in path:
                 self.add_element(node, self.PATH)
+            elif node in invalid:
+                self.add_element(node, self.INVALID)
             else:
                 self.add_element(node, self.BLANK)

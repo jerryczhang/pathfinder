@@ -23,47 +23,47 @@ class Display:
 
     def expand(self, direction):
         """Expand the np array in a specified direction."""
-        (y, x) = self.display.shape
+        ysize, xsize = self.display.shape
         if direction == 'n':
-            self.display = np.concatenate((np.full((2, x), self.BLANK), self.display), axis=0)
+            self.display = np.concatenate((np.full((2, xsize), self.BLANK), self.display), axis=0)
             self.y_offset += 2
         if direction == 'e':
-            self.display = np.concatenate((self.display, np.full((y, 2), self.BLANK)), axis=1)
+            self.display = np.concatenate((self.display, np.full((ysize, 2), self.BLANK)), axis=1)
         if direction == 's':
-            self.display = np.concatenate((self.display, np.full((2, x), self.BLANK)), axis=0)
+            self.display = np.concatenate((self.display, np.full((2, xsize), self.BLANK)), axis=0)
         if direction == 'w':
-            self.display = np.concatenate((np.full((y, 2), self.BLANK), self.display), axis=1)
+            self.display = np.concatenate((np.full((ysize, 2), self.BLANK), self.display), axis=1)
             self.x_offset += 2
 
-    def add_element(self, node, element, offset_dirs=None):
+    def add_element(self, node, element, offset_dirs=''):
         """Add maze coordinates node to the display, offset in directions offset_dirs."""
-        x, y = self.transform(node)
+        xcoor, ycoor = self.transform(node)
         if offset_dirs:
             if 'n' in offset_dirs:
-                y -= 1
+                ycoor -= 1
             elif 's' in offset_dirs:
-                y += 1
+                ycoor += 1
             if 'e' in offset_dirs:
-                x += 1
+                xcoor += 1
             elif 'w' in offset_dirs:
-                x -= 1
-        if x > self.display.shape[1] - 1:
+                xcoor -= 1
+        if xcoor > self.display.shape[1] - 1:
             self.expand('e')
-        if y > self.display.shape[0] - 1:
+        if ycoor > self.display.shape[0] - 1:
             self.expand('s')
-        if x < 0:
+        if xcoor < 0:
             self.expand('w')
-            x += 2
-        if y < 0:
+            xcoor += 2
+        if ycoor < 0:
             self.expand('n')
-            y += 2
-        self.display[y][x] = element
+            ycoor += 2
+        self.display[ycoor][xcoor] = element
 
     def transform(self, node):
         """Converts maze coordinates into array coordinates."""
-        xt = 2 * node[0] + self.x_offset
-        yt = 2 * node[1] + self.y_offset
-        return xt, yt
+        xtransform = 2 * node[0] + self.x_offset
+        ytransform = 2 * node[1] + self.y_offset
+        return xtransform, ytransform
 
     def update_display(self, path, maze):
         """Update the graphical array."""

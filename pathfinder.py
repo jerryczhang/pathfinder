@@ -1,5 +1,5 @@
 import interface
-from random import randrange
+from random import randint
 from time import sleep
 
 MANUAL_INPUT = False
@@ -21,7 +21,7 @@ def reverse(direction):
 
 def random_success(rate):
     """Returns true with the frequency provided by rate."""
-    return randrange(100) <= rate * 100
+    return randint(1, 100) <= rate * 100
 
 def get_end(path, maze, success_rate=0.01):
     """Get input for whether the robot is at the end of the maze."""
@@ -31,12 +31,12 @@ def get_end(path, maze, success_rate=0.01):
         sleep(0.1)
         return random_success(success_rate)
 
-def scan(direction, manual_input=False, sensor_input=False, success_rate=0.4):
+def scan(direction, success_rate=0.4):
     """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
-    if sensor_input:
+    if SENSOR_INPUT:
         input("Scan " + direction)
         return distances.get_distance() >= 10
-    elif manual_input:
+    elif MANUAL_INPUT:
         return input(direction + " valid (T/F):").lower() == 't'
     else:
         return random_success(success_rate)
@@ -65,9 +65,10 @@ def find_path(maze, start, robot_pos, path, display):
                     each recursive call
         robot_pos:  The current position of the physical robot
         path:       The list of nodes that the robot has traveled through
+        display:    The display containing the graphical representation of the maze
 
     Returns:
-        The path to the end of the maze, if it exists, and None otherwise
+        The path to the end of the maze, if it exists, or None otherwise
     """
     path = path + [start]
     display.update_display(path, maze)
@@ -80,7 +81,7 @@ def find_path(maze, start, robot_pos, path, display):
         if maze[start][direction] == "unknown":
             adj = get_nearby_node(direction, start)
             if adj not in maze or maze[adj][reverse(direction)] == "unknown":
-                valid = scan(direction, manual_input = MANUAL_INPUT, sensor_input = SENSOR_INPUT)
+                valid = scan(direction)
                 if valid:
                     maze[start][direction] = adj
                     maze[adj] = {
@@ -96,7 +97,7 @@ def find_path(maze, start, robot_pos, path, display):
                 maze[start][direction] = "invalid"
             else:
                 maze[start][direction] = adj
-            display.update_display(path, maze)
+    display.update_display(path, maze)
     for direction in maze[start]:
         if maze[start][direction] != "invalid" and maze[start][direction] not in path:
             newpath = find_path(maze, maze[start][direction], robot_pos, path, display)
@@ -118,6 +119,7 @@ def main():
         }
     }
     path = find_path(maze, (0,0), [0, 0], [], display)
+
     print(''.center(20, '='))
     if path:
         print("Finished, path: " + str(path))

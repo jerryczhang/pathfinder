@@ -2,127 +2,127 @@ import interface
 from random import randint
 from time import sleep
 
-MANUAL_INPUT = False
-SENSOR_INPUT = False
-RANDOM_INPUT = True
+MANUAL = 0
+RANDOM = 1
+SENSOR = 2
+FULL   = 3
 
-def move(position, robot_pos):
-    """Moves the robot to position from robot_pos."""
-    xdist = position[0] - robot_pos[0]
-    ydist = position[1] - robot_pos[1]
-    robot_pos[0] += xdist
-    robot_pos[1] += ydist
+class PathfinderBot:
+    """Represents the pathfinder bot.""" 
 
-def reverse(direction):
-    """Reverses the given compass direction (n, e, s, w)."""
-    directions = ['n', 'e', 's', 'w', 'n', 'e', 's', 'w']
-    return directions[directions.index(direction) + 2]
+    def __init__(self, mode, end_node):
+        self.mode = mode
+        self.robot_pos = [0,0] 
+        self.end_node = end_node
+        
+        self.invalid = []
+        self.display = interface.Display()
+        self.maze = {(0, 0):
+            {
+                'n': "unknown",
+                'e': "unknown",
+                's': "unknown",
+                'w': "unknown",
+            }
+        }
 
-def random_success(rate):
-    """Returns true with the frequency provided by rate."""
-    return randint(1, 100) <= rate * 100
+    def move(self, position):
+        """Moves the robot to position from robot_pos."""
+        if self.mode == FULL:
+            pass
+        self.robot_pos = position
 
-def get_end():
-    xend = input("Enter x-coordinate of end: ")
-    yend = input("Enter y-coordinate of end: ")
-    return (int(xend), int(yend))
+    def reverse(self, direction):
+        """Reverses the given compass direction (n, e, s, w)."""
+        directions = ['n', 'e', 's', 'w', 'n', 'e', 's', 'w']
+        return directions[directions.index(direction) + 2]
 
-def scan(direction, success_rate=0.4):
-    """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
-    if SENSOR_INPUT:
-        input("Scan " + direction)
-        return distances.get_distance() >= 10
-    elif MANUAL_INPUT:
-        return input(direction + " valid (T/F):").lower() == 't'
-    else:
-        return random_success(success_rate)
+    def random_success(self, rate):
+        """Returns true with the frequency provided by rate."""
+        return randint(1, 100) <= rate * 100
 
-def get_nearby_node(current_node, direction):
-    """Get the coordinates of the adjacent node."""
-    adj = list(current_node)
-    if direction == 'n':
-        adj[1] -= 1
-    elif direction == 'e':
-        adj[0] += 1
-    elif direction == 's':
-        adj[1] += 1
-    elif direction == 'w':
-        adj[0] -= 1
-    return tuple(adj) 
+    def scan(self, direction, success_rate=0.4):
+        """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
+        if self.mode == SENSOR or self.mode == FULL:
+            input("Scan " + direction)
+            return distances.get_distance() >= 10
+        elif self.mode == MANUAL:
+            return input(direction + " valid (T/F):").lower() == 't'
+        else:
+            return self.random_success(success_rate)
 
-def find_path(maze, start, end, robot_pos, display, path=[], invalid=[]):
-    """Recursively iterate through maze nodes, constructing and solving a graph.
+    def get_nearby_node(self, node, direction):
+        """Get the coordinates of the adjacent node."""
+        adj = list(node)
+        if direction == 'n':
+            adj[1] -= 1
+        elif direction == 'e':
+            adj[0] += 1
+        elif direction == 's':
+            adj[1] += 1
+        elif direction == 'w':
+            adj[0] -= 1
+        return tuple(adj) 
 
-    Parameters:
-        maze:       The nested dictionary which contains the tuple coordinates of each node
-                    as the keys, and a dictionary which contains information about
-                    adjacent nodes
-        start:      The starting node of the maze--this represents the current node with
-                    each recursive call
-        robot_pos:  The current position of the physical robot
-        path:       The list of nodes that the robot has traveled through
-        display:    The display containing the graphical representation of the maze
+    def find_path(self, node=(0,0), path=[]):
+        """Recursively iterate through maze nodes, constructing and solving a graph.
 
-    Returns:
-        The path to the end of the maze, if it exists, or None otherwise
-    """
-    if RANDOM_INPUT:
-        sleep(0.1)
-    path = path + [start]
-    display.update_display(maze, path, invalid)
-    display.print_display()
-    move(path[-1], robot_pos)
-    if start == end:
-        return path 
+        Parameters:
+            path:       The list of nodes that the robot has traveled through
 
-    for direction in maze[start]:
-        if maze[start][direction] == "unknown":
-            adj = get_nearby_node(start, direction)
-            if adj not in maze or maze[adj][reverse(direction)] == "unknown":
-                valid = scan(direction)
-                if valid:
-                    maze[start][direction] = adj
-                    maze[adj] = {
-                            'n': "unknown", 
-                            'e': "unknown", 
-                            's': "unknown", 
-                            'w': "unknown", 
-                            reverse(direction): path[-1]
-                    }
+        Returns:
+            The path to the end of the maze, if it exists, or None otherwise
+        """
+        if self.mode == RANDOM:
+            sleep(0.1)
+        path = path + [node]
+        self.display.update_display(self.maze, path, self.invalid)
+        self.display.print_display()
+        self.move(path[-1])
+        if node == self.end_node:
+            return path 
+
+        for direction in self.maze[node]:
+            if self.maze[node][direction] == "unknown":
+                adj = self.get_nearby_node(node, direction)
+                if adj not in self.maze or self.maze[adj][self.reverse(direction)] == "unknown":
+                    valid = self.scan(direction)
+                    if valid:
+                        self.maze[node][direction] = adj
+                        self.maze[adj] = {
+                                'n': "unknown", 
+                                'e': "unknown", 
+                                's': "unknown", 
+                                'w': "unknown", 
+                                self.reverse(direction): path[-1]
+                        }
+                    else:
+                        self.maze[node][direction] = "invalid"
+                elif self.maze[adj][self.reverse(direction)] == "invalid":
+                    self.maze[node][direction] = "invalid"
                 else:
-                    maze[start][direction] = "invalid"
-            elif maze[adj][reverse(direction)] == "invalid":
-                maze[start][direction] = "invalid"
-            else:
-                maze[start][direction] = adj
-    display.update_display(maze, path, invalid)
-    for direction in maze[start]:
-        if (
-            maze[start][direction] != "invalid" 
-            and maze[start][direction] not in path 
-            and maze[start][direction] not in invalid
-        ):
-            newpath = find_path(maze, maze[start][direction], end, robot_pos, display, path, invalid)
-            if newpath:
-                return newpath
-            else:
-                invalid.append(maze[start][direction])
-                move(path[-1], robot_pos)
-    return None
+                    self.maze[node][direction] = adj
+        self.display.update_display(self.maze, path, self.invalid)
+        for direction in self.maze[node]:
+            if (
+                self.maze[node][direction] != "invalid" 
+                and self.maze[node][direction] not in path 
+                and self.maze[node][direction] not in self.invalid
+            ):
+                node = self.maze[node][direction]
+                new_path = self.find_path(node, path)
+                if new_path:
+                    return new_path
+                else:
+                    self.invalid.append(self.maze[node][direction])
+                    self.move(path[-1])
+        return None
 
 def main():
     """Initializes maze and display, then calls find_path."""
-    display = interface.Display()
-    maze = {(0, 0):
-        {
-            'n': "unknown",
-            'e': "unknown",
-            's': "unknown",
-            'w': "unknown",
-        }
-    }
-    path = find_path(maze, (0,0), get_end(), [0, 0], display)
 
+    pathfinder = PathfinderBot(MANUAL, (10, 10))
+    path = pathfinder.find_path()
     print(''.center(20, '='))
     if path:
         print("Finished, path: " + str(path))

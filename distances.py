@@ -5,19 +5,9 @@ import threading
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
-GPIO.setup(16, GPIO.IN) #CLOCK
-GPIO.setup(20, GPIO.OUT) #TRIGGER
-GPIO.setup(21, GPIO.IN) #INPUT
-
-def scan(direction, available):
-    """Get the distance from ultrasonics in a particular direction."""
-    data = str(get_distance())      
-    distance = int(data[data_marker:data_marker + 16], 2)
-    if distance <= 5:
-        available[direction] = False
-    elif 5 < distance <= 30:
-        available[direction] = True
-    return available        
+GPIO.setup(16, GPIO.IN) # clock
+GPIO.setup(20, GPIO.OUT) # trigger
+GPIO.setup(21, GPIO.IN) # input
 
 def motor_function(direction):
     """Run the motors as a thread."""
@@ -47,29 +37,21 @@ def move_robot(direction):
         distance = (data[datamarker:data_marker + 16], 2)
     kill_motor = True
 
-def get_distance():
-    """Get the distance from ultrasonics in all surrounding directions."""
-    GPIO.output(20, False)
-    def receive_data():
-        full_input = []
-        for _ in range(0, 16):
-            while GPIO.input(16) == False:
-                continue
-            if GPIO.input(21) == True:
-                full_input.append("1")
-            else:
-                full_input.append("0")
-            while GPIO.input(16) == True:
-                continue
-        full_input = "".join(FullInput)
-        print("Data Stream: " + full_input)
-        return int(full_input, 2)
-    print("Sending Trigger Pulse...")
+def get_distance(direction):
+    """Get the distance from ultrasonics in a direction."""
     GPIO.output(20, True)
-    data = receive_data()
+    data = []
+    for _ in range(16):
+        while GPIO.input(16) == False:
+            continue
+        if GPIO.input(21) == True:
+            data.append("1")
+        else:
+            data.append("0")
+        while GPIO.input(16) == True:
+            continue
+    data = "".join(data)
     GPIO.output(20, False)
-    print("Received distance data: " + str(data) + "cm")
     if data >= 3000:
-        print("Invalid distance, retrying")
         data = get_distance()
     return data

@@ -3,25 +3,30 @@ import sys
 
 class Display:
 
-    def __init__(self):
+    def __init__(self, end_node):
         """Initialize the text blocks used for display, as well as the np array."""
         self.BLANK = "\033[40m  \033[0m"
         self.WALL = "\033[47m  \033[0m"
         self.CURR = "\033[40m[]\033[0m"
-        self.START = "\033[40m<>\033[0m"
+        self.START = "\033[42m  \033[0m"
+        self.END = "\033[43m  \033[0m"
         self.PATH = "\033[40m::\033[0m"
         self.INVALID = "\033[40m><\033[0m"
         self.display = np.full((3, 3), self.BLANK)
         self.x_offset = 1
         self.y_offset = 1
 
+        self.add_element(end_node, self.END)
+
     def print_display(self):
         """Print the maze in graphical form with color formatting."""
+        sys.stdout.write('\n')
         for row in self.display:
             for item in row:
                 sys.stdout.write(item)
             sys.stdout.write('\n')
         sys.stdout.write('\n')
+        print(''.center(50, '=')) 
 
     def expand(self, direction):
         """Expand the np array in a specified direction."""
@@ -49,14 +54,14 @@ class Display:
                 xcoor += 1
             elif 'w' in offset_dirs:
                 xcoor -= 1
-        if xcoor > self.display.shape[1] - 1:
+        while xcoor > self.display.shape[1] - 1:
             self.expand('e')
-        if ycoor > self.display.shape[0] - 1:
+        while ycoor > self.display.shape[0] - 1:
             self.expand('s')
-        if xcoor < 0:
+        while xcoor < 0:
             self.expand('w')
             xcoor += 2
-        if ycoor < 0:
+        while ycoor < 0:
             self.expand('n')
             ycoor += 2
         self.display[ycoor][xcoor] = element
@@ -76,10 +81,10 @@ class Display:
         for offset_dir in ['ne', 'se', 'sw', 'nw']:
             self.add_element(curr_node, self.WALL, offset_dir)
         for node in maze:
-            if node == path[0]:
-                self.add_element(node, self.START)
-            elif node == path[-1]:
+            if node == path[-1]:
                 self.add_element(node, self.CURR)
+            elif node == path[0]:
+                self.add_element(node, self.START)
             elif node in path:
                 self.add_element(node, self.PATH)
             elif node in invalid:

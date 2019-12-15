@@ -23,7 +23,7 @@ class PathfinderBot:
         self.end_node = end_node
         
         self.invalid = []
-        self.display = interface.Display()
+        self.display = interface.Display(end_node)
         self.maze = {(0, 0):
             {
                 'n': "unknown",
@@ -125,9 +125,8 @@ class PathfinderBot:
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(RANDOM, (10, 10))
+    pathfinder = PathfinderBot(RANDOM, (4, 4))
     path = pathfinder.find_path()
-    print(''.center(20, '='))
     if path:
         print("Finished, path: " + str(path))
     else:

@@ -11,6 +11,13 @@ class PathfinderBot:
     """Represents the pathfinder bot.""" 
 
     def __init__(self, mode, end_node):
+        """Initializes the robot.
+
+        Parameters:
+            mode: The operating mode of the robot--can be MANUAL, RANDOM, SENSOR, or FULL
+            end_node: The target node of the maze that the robot is reaching
+
+        """
         self.mode = mode
         self.robot_pos = [0,0] 
         self.end_node = end_node
@@ -64,24 +71,8 @@ class PathfinderBot:
             adj[0] -= 1
         return tuple(adj) 
 
-    def find_path(self, node=(0,0), path=[]):
-        """Recursively iterate through maze nodes, constructing and solving a graph.
-
-        Parameters:
-            path:       The list of nodes that the robot has traveled through
-
-        Returns:
-            The path to the end of the maze, if it exists, or None otherwise
-        """
-        if self.mode == RANDOM:
-            sleep(0.1)
-        path = path + [node]
-        self.display.update_display(self.maze, path, self.invalid)
-        self.display.print_display()
-        self.move(path[-1])
-        if node == self.end_node:
-            return path 
-
+    def update_surroundings(self, node):
+        """Scan surrounding nodes and update maze accordingly."""
         for direction in self.maze[node]:
             if self.maze[node][direction] == "unknown":
                 adj = self.get_nearby_node(node, direction)
@@ -94,7 +85,7 @@ class PathfinderBot:
                                 'e': "unknown", 
                                 's': "unknown", 
                                 'w': "unknown", 
-                                self.reverse(direction): path[-1]
+                                self.reverse(direction): node
                         }
                     else:
                         self.maze[node][direction] = "invalid"
@@ -102,15 +93,29 @@ class PathfinderBot:
                     self.maze[node][direction] = "invalid"
                 else:
                     self.maze[node][direction] = adj
+
+    def find_path(self, node=(0,0), path=[]):
+        """Recursively iterate through maze nodes, constructing and solving a graph."""
+        if self.mode == RANDOM:
+            sleep(0.1)
+        path = path + [node]
         self.display.update_display(self.maze, path, self.invalid)
+        self.display.print_display()
+        self.move(path[-1])
+        if node == self.end_node:
+            return path 
+
+        self.update_surroundings(node)
+        self.display.update_display(self.maze, path, self.invalid)
+        
         for direction in self.maze[node]:
             if (
                 self.maze[node][direction] != "invalid" 
                 and self.maze[node][direction] not in path 
                 and self.maze[node][direction] not in self.invalid
             ):
-                node = self.maze[node][direction]
-                new_path = self.find_path(node, path)
+                next_node = self.maze[node][direction]
+                new_path = self.find_path(next_node, path)
                 if new_path:
                     return new_path
                 else:
@@ -119,9 +124,8 @@ class PathfinderBot:
         return None
 
 def main():
-    """Initializes maze and display, then calls find_path."""
-
-    pathfinder = PathfinderBot(MANUAL, (10, 10))
+    """Initializes robot and finds path."""
+    pathfinder = PathfinderBot(RANDOM, (10, 10))
     path = pathfinder.find_path()
     print(''.center(20, '='))
     if path:

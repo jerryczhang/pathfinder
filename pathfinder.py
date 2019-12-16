@@ -71,6 +71,25 @@ class PathfinderBot:
             adj[0] -= 1
         return tuple(adj) 
 
+    def get_directions(self, node):
+        """Return directions sorted such that directions toward end_node are prioritized."""
+        x_dist = self.end_node[0] - node[0]
+        y_dist = self.end_node[1] - node[1]
+        if y_dist > 0:
+            y_dirs = ['s', 'n']
+        else:
+            y_dirs = ['n', 's']
+        if x_dist > 0:
+            x_dirs = ['e', 'w'] 
+        else:
+            x_dirs = ['w', 'e']
+        if abs(y_dist) > abs(x_dist):
+            y_dirs[1:1] = x_dirs
+            return y_dirs
+        else:
+            x_dirs[1:1] = y_dirs
+            return x_dirs
+
     def update_surroundings(self, node):
         """Scan surrounding nodes and update maze accordingly."""
         for direction in self.maze[node]:
@@ -108,7 +127,7 @@ class PathfinderBot:
         self.update_surroundings(node)
         self.display.update_display(self.maze, path, self.invalid)
         
-        for direction in self.maze[node]:
+        for direction in self.get_directions(node):
             if (
                 self.maze[node][direction] != "invalid" 
                 and self.maze[node][direction] not in path 
@@ -125,7 +144,7 @@ class PathfinderBot:
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(RANDOM, (4, 4))
+    pathfinder = PathfinderBot(RANDOM, (4, -4))
     path = pathfinder.find_path()
     if path:
         print("Finished, path: " + str(path))

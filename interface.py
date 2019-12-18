@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import subprocess
 
 class Display:
 
@@ -20,7 +21,7 @@ class Display:
 
     def print_display(self):
         """Print the maze in graphical form with color formatting."""
-        sys.stdout.write('\n')
+        subprocess.run("clear")
         for row in self.display:
             for item in row:
                 sys.stdout.write(item)

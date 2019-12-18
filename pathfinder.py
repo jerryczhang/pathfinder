@@ -10,21 +10,23 @@ FULL   = 3
 class PathfinderBot:
     """Represents the pathfinder bot.""" 
 
-    def __init__(self, mode, end_node):
+    def __init__(self, mode, start_node, end_node):
         """Initializes the robot.
 
         Parameters:
             mode: The operating mode of the robot--can be MANUAL, RANDOM, SENSOR, or FULL
+            start_node: The node where the robot is starting
             end_node: The target node of the maze that the robot is reaching
 
         """
         self.mode = mode
-        self.robot_pos = [0,0] 
+        self.robot_pos = list(start_node)
+        self.start_node = start_node
         self.end_node = end_node
         
         self.invalid = []
         self.display = interface.Display(end_node)
-        self.maze = {(0, 0):
+        self.maze = {start_node:
             {
                 'n': "unknown",
                 'e': "unknown",
@@ -113,8 +115,10 @@ class PathfinderBot:
                 else:
                     self.maze[node][direction] = adj
 
-    def find_path(self, node=(0,0), path=[]):
+    def find_path(self, node=None, path=[]):
         """Recursively iterate through maze nodes, constructing and solving a graph."""
+        if node == None:
+            node = self.start_node
         if self.mode == RANDOM:
             sleep(0.1)
         path = path + [node]
@@ -144,7 +148,7 @@ class PathfinderBot:
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(RANDOM, (4, -4))
+    pathfinder = PathfinderBot(RANDOM, (-10, 0), (10, 0))
     path = pathfinder.find_path()
     if path:
         print("Finished, path: " + str(path))

@@ -13,9 +13,9 @@ class Display:
         self.END = "\033[43m  \033[0m"
         self.PATH = "\033[40m::\033[0m"
         self.INVALID = "\033[40m><\033[0m"
-        self.display = np.full((3, 3), self.BLANK)
-        self.x_offset = 1
-        self.y_offset = 1
+        self.display = np.full((1, 1), self.BLANK)
+        self.x_offset = 0
+        self.y_offset = 0
 
         self.add_element(end_node, self.END)
 

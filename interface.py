@@ -27,7 +27,6 @@ class Display:
                 sys.stdout.write(item)
             sys.stdout.write('\n')
         sys.stdout.write('\n')
-        print(''.center(50, '=')) 
 
     def expand(self, direction):
         """Expand the np array in a specified direction."""

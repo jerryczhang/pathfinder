@@ -122,15 +122,16 @@ class PathfinderBot:
         if self.mode == RANDOM:
             sleep(0.1)
         path = path + [node]
+        self.move(path[-1])
+    
         self.display.update_display(self.maze, path, self.invalid)
         self.display.print_display()
-        self.move(path[-1])
-        if node == self.end_node:
-            return path 
-
         self.update_surroundings(node)
         self.display.update_display(self.maze, path, self.invalid)
         
+        if node == self.end_node:
+            return path 
+
         for direction in self.get_directions(node):
             if (
                 self.maze[node][direction] != "invalid" 
@@ -144,11 +145,12 @@ class PathfinderBot:
                 else:
                     self.invalid.append(self.maze[node][direction])
                     self.move(path[-1])
+        self.display.print_display()
         return None
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(RANDOM, (-10, 0), (10, 0))
+    pathfinder = PathfinderBot(MANUAL, (-10, 0), (10, 0))
     path = pathfinder.find_path()
     if path:
         print("Finished, path: " + str(path))

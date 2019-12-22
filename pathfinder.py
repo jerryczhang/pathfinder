@@ -151,25 +151,37 @@ class PathfinderBot:
 
     def second_solve(self, solution):
         """Finds the way out of the maze starting from a new location."""
-        if self.mode == MANUAL:
-            x_start = int(input("Enter x coordinate of new start: "))
-            y_start = int(input("Enter y coordinate of new start: "))
-            new_start = (x_start, y_start)
-        else:
-            new_start = (0, 0)
+        x_start = int(input("Enter x coordinate of new start: "))
+        y_start = int(input("Enter y coordinate of new start: "))
+        new_start = (x_start, y_start)
+        if new_start not in self.maze:
+            self.maze[new_start] = { 
+                    'n': "unknown", 
+                    'e': "unknown", 
+                    's': "unknown", 
+                    'w': "unknown", 
+            }
         self.invalid = []
         self.solution = solution
         path = self.find_path(node=new_start)
-        path_index = solution.index(path[-1]) + 1
-        return path + solution[path_index:]
+        if path:
+            path_index = solution.index(path[-1]) + 1
+            return path + solution[path_index:]
+        else:
+            return None
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(RANDOM, (0, 0), (3, -3))
+    pathfinder = PathfinderBot(MANUAL, (0, 0), (3, -3))
     path = pathfinder.find_path()
     if path:
         print("Finished, path: " + str(path))
-        print(pathfinder.second_solve(path))
+        while True:
+            second_path = pathfinder.second_solve(path)
+            if second_path:
+                print("Finished, path: " + str(second_path))
+            else:
+                print("Impossible maze")
     else:
         print("Impossible maze")
 

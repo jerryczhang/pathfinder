@@ -10,7 +10,7 @@ FULL   = 3
 class PathfinderBot:
     """Represents the pathfinder bot.""" 
 
-    def __init__(self, mode, start_node, end_node):
+    def __init__(self, mode):
         """Initializes the robot.
 
         Parameters:
@@ -20,21 +20,8 @@ class PathfinderBot:
 
         """
         self.mode = mode
-        self.robot_pos = list(start_node)
-        self.start_node = start_node
-        self.end_node = end_node
-        
-        self.solution = []
-        self.invalid = []
-        self.display = interface.Display(end_node)
-        self.maze = {start_node:
-            {
-                'n': "unknown",
-                'e': "unknown",
-                's': "unknown",
-                'w': "unknown",
-            }
-        }
+        self.display = interface.Display()
+        self.maze = {}
 
     def move(self, position):
         """Moves the robot to position from robot_pos."""
@@ -125,12 +112,12 @@ class PathfinderBot:
         path = path + [node]
         self.move(path[-1])
     
-        self.display.update_display(self.maze, path, self.invalid)
+        self.display.update_display(self.maze, path, self.end_node, self.invalid)
         self.display.print_display()
         self.update_surroundings(node)
-        self.display.update_display(self.maze, path, self.invalid)
+        self.display.update_display(self.maze, path, self.end_node, self.invalid)
         
-        if node == self.end_node or node in self.solution:
+        if node == self.end_node:
             return path 
 
         for direction in self.get_directions(node):
@@ -149,39 +136,29 @@ class PathfinderBot:
         self.display.print_display()
         return None
 
-    def second_solve(self, solution):
+    def start(self, start_node, end_node):
         """Finds the way out of the maze starting from a new location."""
-        x_start = int(input("Enter x coordinate of new start: "))
-        y_start = int(input("Enter y coordinate of new start: "))
-        new_start = (x_start, y_start)
-        if new_start not in self.maze:
-            self.maze[new_start] = { 
+        if start_node not in self.maze:
+            self.maze[start_node] = { 
                     'n': "unknown", 
                     'e': "unknown", 
                     's': "unknown", 
                     'w': "unknown", 
             }
         self.invalid = []
-        self.solution = solution
-        path = self.find_path(node=new_start)
+        self.end_node = end_node
+        path = self.find_path(node=start_node)
         if path:
-            path_index = solution.index(path[-1]) + 1
-            return path + solution[path_index:]
+            return path
         else:
             return None
 
 def main():
     """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(MANUAL, (0, 0), (3, -3))
-    path = pathfinder.find_path()
+    pathfinder = PathfinderBot(MANUAL)
+    path = pathfinder.start((0, 0), (3, -3))
     if path:
         print("Finished, path: " + str(path))
-        while True:
-            second_path = pathfinder.second_solve(path)
-            if second_path:
-                print("Finished, path: " + str(second_path))
-            else:
-                print("Impossible maze")
     else:
         print("Impossible maze")
 

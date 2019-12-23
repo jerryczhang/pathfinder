@@ -4,7 +4,7 @@ import subprocess
 
 class Display:
 
-    def __init__(self, end_node):
+    def __init__(self):
         """Initialize the text blocks used for display, as well as the np array."""
         self.BLANK = "\033[40m  \033[0m"
         self.WALL = "\033[47m  \033[0m"
@@ -16,8 +16,6 @@ class Display:
         self.display = np.full((1, 1), self.BLANK)
         self.x_offset = 0
         self.y_offset = 0
-
-        self.add_element(end_node, self.END)
 
     def print_display(self):
         """Print the maze in graphical form with color formatting."""
@@ -72,7 +70,7 @@ class Display:
         ytransform = 2 * node[1] + self.y_offset
         return xtransform, ytransform
 
-    def update_display(self, maze, path, invalid):
+    def update_display(self, maze, path, end, invalid):
         """Update the graphical array."""
         curr_node = path[-1]
         for direction in maze[curr_node]:
@@ -91,3 +89,4 @@ class Display:
                 self.add_element(node, self.INVALID)
             else:
                 self.add_element(node, self.BLANK)
+        self.add_element(end, self.END)

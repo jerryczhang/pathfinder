@@ -5,7 +5,7 @@ import subprocess
 class Display:
 
     def __init__(self, end_node):
-        """Initialize the text blocks used for display, as well as the np array."""
+        """Initialize the text blocks used for display, as well as the numpy array."""
         self.BLANK = "\033[40m  \033[0m"
         self.WALL = "\033[47m  \033[0m"
         self.CURR = "\033[40m[]\033[0m"
@@ -20,7 +20,7 @@ class Display:
         self.end_node = end_node
 
     def print_display(self):
-        """Print the maze in graphical form with color formatting."""
+        """Print the numpy array, which is the graphical representation of the maze."""
         subprocess.run("clear")
         for row in self.display:
             for item in row:
@@ -29,7 +29,7 @@ class Display:
         sys.stdout.write('\n')
 
     def expand(self, direction):
-        """Expand the np array in a specified direction."""
+        """Expand the numpy array in a specified direction."""
         ysize, xsize = self.display.shape
         if direction == 'n':
             self.display = np.concatenate((np.full((2, xsize), self.BLANK), self.display), axis=0)

@@ -25,7 +25,7 @@ class PathfinderBot:
         self.end_node = end_node
 
     def move(self, position):
-        """Moves the robot to position from curr_pos."""
+        """Sets pathfinder curr_pos to position."""
         if self.mode == FULL:
             pass
         self.curr_pos = position
@@ -64,8 +64,8 @@ class PathfinderBot:
 
     def get_directions(self, node):
         """Return list of directions sorted such that directions toward end_node are prioritized."""
-        x_dist = self.end_node[0] - node[0]
-        y_dist = self.end_node[1] - node[1]
+        x_dist = self.target_node[0] - node[0]
+        y_dist = self.target_node[1] - node[1]
         if y_dist > 0:
             y_dirs = ['s', 'n']
         else:
@@ -80,6 +80,15 @@ class PathfinderBot:
         else:
             x_dirs[1:1] = y_dirs
             return x_dirs
+
+    def average_node(self, nodes):
+        """Find the average coordinates of a list of nodes."""
+        x_sum = 0
+        y_sum = 0
+        for node in nodes:
+            x_sum += node[0]
+            y_sum += node[1]
+        return (x_sum/len(nodes), y_sum/len(nodes))
 
     def update_surroundings(self, node):
         """Scan surrounding nodes and update maze accordingly."""
@@ -159,6 +168,7 @@ class PathfinderBot:
                     'w': "unknown", 
             }
         self.invalid = []
+        self.target_node = self.average_node(list(self.end_path) + [self.end_node])
         path = self.find_path(node=start_node)
         if path:
             for i in range(len(path)-1):
@@ -177,8 +187,8 @@ def main():
     """Main method, initializes robot and solves maze."""
     pathfinder = PathfinderBot(MANUAL, (3, -3))
     while True:
-        x_start = int(input("x:"))
-        y_start = int(input("y:"))
+        x_start = int(input("X coordinate of starting node:"))
+        y_start = int(input("Y coordinate of starting node:"))
         path = pathfinder.start((x_start, y_start))
         if path:
             print("Finished, path: " + str(path))

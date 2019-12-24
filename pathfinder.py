@@ -10,24 +10,25 @@ FULL   = 3
 class PathfinderBot:
     """Represents the pathfinder bot.""" 
 
-    def __init__(self, mode):
-        """Initializes the robot.
+    def __init__(self, mode, end_node):
+        """Initializes the robot, display, maze, and end_node.
 
         Parameters:
             mode: The operating mode of the robot--can be MANUAL, RANDOM, SENSOR, or FULL
-            start_node: The node where the robot is starting
             end_node: The target node of the maze that the robot is reaching
 
         """
         self.mode = mode
-        self.display = interface.Display()
+        self.display = interface.Display(end_node)
         self.maze = {}
+        self.end_path = {}
+        self.end_node = end_node
 
     def move(self, position):
-        """Moves the robot to position from robot_pos."""
+        """Moves the robot to position from curr_pos."""
         if self.mode == FULL:
             pass
-        self.robot_pos = position
+        self.curr_pos = position
 
     def reverse(self, direction):
         """Reverses the given compass direction (n, e, s, w)."""
@@ -49,7 +50,7 @@ class PathfinderBot:
             return self.random_success(success_rate)
 
     def get_nearby_node(self, node, direction):
-        """Get the coordinates of the adjacent node."""
+        """Get the coordinates of the adjacent node in direction."""
         adj = list(node)
         if direction == 'n':
             adj[1] -= 1
@@ -62,7 +63,7 @@ class PathfinderBot:
         return tuple(adj) 
 
     def get_directions(self, node):
-        """Return directions sorted such that directions toward end_node are prioritized."""
+        """Return list of directions sorted such that directions toward end_node are prioritized."""
         x_dist = self.end_node[0] - node[0]
         y_dist = self.end_node[1] - node[1]
         if y_dist > 0:
@@ -91,11 +92,7 @@ class PathfinderBot:
                         self.maze[node][direction] = adj
                         self.maze[adj] = {
                                 'n': "unknown", 
-                                'e': "unknown", 
-                                's': "unknown", 
-                                'w': "unknown", 
-                                self.reverse(direction): node
-                        }
+                                'e': "unknown", 's': "unknown", 'w': "unknown", self.reverse(direction): node }
                     else:
                         self.maze[node][direction] = "invalid"
                 elif self.maze[adj][self.reverse(direction)] == "invalid":
@@ -103,21 +100,32 @@ class PathfinderBot:
                 else:
                     self.maze[node][direction] = adj
 
-    def find_path(self, node=None, path=[]):
-        """Recursively iterate through maze nodes, constructing and solving a graph."""
-        if node == None:
-            node = self.start_node
+    def find_path(self, node, path=[]):
+        """Recursively iterate through maze nodes, constructing and solving a graph.
+
+        Each node is represented by one run through of find_path, which is called recursively
+        on each adjacent node until the base case--the end node--is reached. Each node 
+        contains its own path variable, which at the base case is returned to the top
+        as the solution to the maze.
+        
+        Parameters:
+            node: The current node in the recursion
+            path: The list of nodes the method has visited
+        
+        Returns: The path to the end, if it exists, or None otherwise
+        """
         if self.mode == RANDOM:
             sleep(0.1)
         path = path + [node]
         self.move(path[-1])
     
-        self.display.update_display(self.maze, path, self.end_node, self.invalid)
+        self.display.update_display(self.maze, path, self.invalid)
         self.display.print_display()
         self.update_surroundings(node)
-        self.display.update_display(self.maze, path, self.end_node, self.invalid)
+        self.display.update_display(self.maze, path, self.invalid)
         
-        if node == self.end_node:
+        if node == self.end_node or node in self.end_path:
+            self.display.print_display()
             return path 
 
         for direction in self.get_directions(node):
@@ -136,8 +144,13 @@ class PathfinderBot:
         self.display.print_display()
         return None
 
-    def start(self, start_node, end_node):
-        """Finds the way out of the maze starting from a new location."""
+    def start(self, start_node):
+        """The starter method of the robot, navigates to the end from start_node.
+
+        Can be called multiple times, where each run through the maze adds
+        nodes to end_path. Upon reaching any node in end_path, stops the
+        recursive algorithm and uses end_path to nagivate to the end.
+        """
         if start_node not in self.maze:
             self.maze[start_node] = { 
                     'n': "unknown", 
@@ -146,21 +159,31 @@ class PathfinderBot:
                     'w': "unknown", 
             }
         self.invalid = []
-        self.end_node = end_node
         path = self.find_path(node=start_node)
         if path:
+            for i in range(len(path)-1):
+                node = path[i]
+                if node not in self.end_path:
+                    self.end_path[node] = path[i+1]
+            while self.curr_pos != self.end_node:
+                next_node = self.end_path[self.curr_pos]
+                path.append(next_node)
+                self.move(next_node)
             return path
         else:
             return None
 
 def main():
-    """Initializes robot and finds path."""
-    pathfinder = PathfinderBot(MANUAL)
-    path = pathfinder.start((0, 0), (3, -3))
-    if path:
-        print("Finished, path: " + str(path))
-    else:
-        print("Impossible maze")
+    """Main method, initializes robot and solves maze."""
+    pathfinder = PathfinderBot(MANUAL, (3, -3))
+    while True:
+        x_start = int(input("x:"))
+        y_start = int(input("y:"))
+        path = pathfinder.start((x_start, y_start))
+        if path:
+            print("Finished, path: " + str(path))
+        else:
+            print("Impossible maze")
 
 if __name__ == '__main__':
     main()

@@ -40,7 +40,7 @@ class PathfinderBot:
         return randint(1, 100) <= rate * 100
 
     def scan(self, direction, success_rate=0.4):
-        """Get input for whether a direction is valid. Can be manual or sensor input, or random."""
+        """Get input for whether a direction is valid"""
         if self.mode == SENSOR or self.mode == FULL:
             input("Scan " + direction)
             return distances.get_distance() >= 10
@@ -63,7 +63,9 @@ class PathfinderBot:
         return tuple(adj) 
 
     def get_directions(self, node):
-        """Return list of directions sorted such that directions toward end_node are prioritized."""
+        """Return list of directions sorted by distance 
+        towards average of end_path and end_node.
+        """
         x_dist = self.target_node[0] - node[0]
         y_dist = self.target_node[1] - node[1]
         if y_dist > 0:
@@ -91,7 +93,14 @@ class PathfinderBot:
         return (x_sum/len(nodes), y_sum/len(nodes))
 
     def update_surroundings(self, node):
-        """Scan surrounding nodes and update maze accordingly."""
+        """Scan surrounding nodes and update maze accordingly.
+       
+        First condition checks whether the robot has already scanned a
+        particular direction in a node. Subsequent conditions check whether
+        the adjacent node is already in the maze, and whether the robot
+        has already gathered information about the relationship between
+        the current and adjacent node.
+        """
         for direction in self.maze[node]:
             if self.maze[node][direction] == "unknown":
                 adj = self.get_nearby_node(node, direction)
@@ -101,7 +110,10 @@ class PathfinderBot:
                         self.maze[node][direction] = adj
                         self.maze[adj] = {
                                 'n': "unknown", 
-                                'e': "unknown", 's': "unknown", 'w': "unknown", self.reverse(direction): node }
+                                'e': "unknown", 
+                                's': "unknown", 
+                                'w': "unknown", 
+                                self.reverse(direction): node }
                     else:
                         self.maze[node][direction] = "invalid"
                 elif self.maze[adj][self.reverse(direction)] == "invalid":

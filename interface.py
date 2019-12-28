@@ -72,21 +72,20 @@ class Display:
         ytransform = 2 * node[1] + self.y_offset
         return xtransform, ytransform
 
-    def update_display(self, maze, path, invalid):
+    def update_display(self, maze, invalid, curr_node):
         """Update the graphical array."""
-        curr_node = path[-1]
         for direction in maze[curr_node]:
             if maze[curr_node][direction] == "invalid":
                 self.add_element(curr_node, self.WALL, direction)
         for offset_dir in ['ne', 'se', 'sw', 'nw']:
             self.add_element(curr_node, self.WALL, offset_dir)
         for node in maze:
-            if node == path[-1]:
+            if node == curr_node:
                 self.add_element(node, self.CURR)
-            elif node == path[0]:
-                self.add_element(node, self.START)
-            elif node in path:
-                self.add_element(node, self.PATH)
+            #elif node == path[0]:
+                #self.add_element(node, self.START)
+            #elif node in path:
+                #self.add_element(node, self.PATH)
             elif node in invalid:
                 self.add_element(node, self.INVALID)
             else:

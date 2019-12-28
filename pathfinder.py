@@ -29,6 +29,8 @@ class PathfinderBot:
         if self.mode == FULL:
             pass
         self.curr_pos = position
+        self.display.update_display(self.maze, self.invalid, self.curr_pos)
+        self.display.print_display()
 
     def reverse(self, direction):
         """Reverses the given compass direction (n, e, s, w)."""
@@ -140,13 +142,11 @@ class PathfinderBot:
         path = path + [node]
         self.move(path[-1])
     
-        self.display.update_display(self.maze, path, self.invalid)
-        self.display.print_display()
+        self.display.update_display(self.maze, self.invalid, self.curr_pos)
         self.update_surroundings(node)
-        self.display.update_display(self.maze, path, self.invalid)
+        self.display.update_display(self.maze, self.invalid, self.curr_pos)
         
         if node == self.end_node or node in self.end_path:
-            self.display.print_display()
             return path 
 
         for direction in self.get_directions(node):
@@ -162,7 +162,6 @@ class PathfinderBot:
                 else:
                     self.invalid.append(self.maze[node][direction])
                     self.move(path[-1])
-        self.display.print_display()
         return None
 
     def start(self, start_node):

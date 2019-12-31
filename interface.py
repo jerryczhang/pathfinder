@@ -13,9 +13,11 @@ class Display:
         self.END = "\033[43m  \033[0m"
         self.PATH = "\033[40m::\033[0m"
         self.INVALID = "\033[40m><\033[0m"
+
         self.display = np.full((1, 1), self.BLANK)
         self.x_offset = 0
         self.y_offset = 0
+        self.y_max, self.x_max = self.display.shape
 
         self.end_node = end_node
 
@@ -28,19 +30,20 @@ class Display:
             sys.stdout.write('\n')
         sys.stdout.write('\n')
 
-    def expand(self, direction):
+    def expand(self, direction, num_tiles=1):
         """Expand the numpy array in a specified direction."""
         ysize, xsize = self.display.shape
         if direction == 'n':
-            self.display = np.concatenate((np.full((2, xsize), self.BLANK), self.display), axis=0)
-            self.y_offset += 2
+            self.display = np.concatenate((np.full((2 * num_tiles, xsize), self.BLANK), self.display), axis=0)
+            self.y_offset += 2 * num_tiles
         if direction == 'e':
-            self.display = np.concatenate((self.display, np.full((ysize, 2), self.BLANK)), axis=1)
+            self.display = np.concatenate((self.display, np.full((ysize, 2 * num_tiles), self.BLANK)), axis=1)
         if direction == 's':
-            self.display = np.concatenate((self.display, np.full((2, xsize), self.BLANK)), axis=0)
+            self.display = np.concatenate((self.display, np.full((2 * num_tiles, xsize), self.BLANK)), axis=0)
         if direction == 'w':
-            self.display = np.concatenate((np.full((ysize, 2), self.BLANK), self.display), axis=1)
-            self.x_offset += 2
+            self.display = np.concatenate((np.full((ysize, 2 * num_tiles), self.BLANK), self.display), axis=1)
+            self.x_offset += 2 * num_tiles
+        self.y_max, self.x_max = self.display.shape
 
     def add_element(self, node, element, offset_dirs=''):
         """Add maze coordinates node to the display, offset in directions offset_dirs."""
@@ -54,9 +57,9 @@ class Display:
                 xcoor += 1
             elif 'w' in offset_dirs:
                 xcoor -= 1
-        while xcoor > self.display.shape[1] - 1:
+        while xcoor > self.x_max - 1:
             self.expand('e')
-        while ycoor > self.display.shape[0] - 1:
+        while ycoor > self.y_max - 1:
             self.expand('s')
         while xcoor < 0:
             self.expand('w')

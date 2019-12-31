@@ -147,9 +147,9 @@ class PathfinderBot:
         self.curr_path = path
         self.move(path[-1])
     
-        self.update_display()
         self.update_surroundings(node)
         self.update_display()
+        self.display.print_display()
         
         if node == self.end_node or node in self.end_path:
             return path 

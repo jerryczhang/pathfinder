@@ -24,12 +24,16 @@ class PathfinderBot:
         self.end_path = {}
         self.end_node = end_node
 
+    def update_display(self):
+        """Calls display.update_display(), passing in instance variables."""
+        self.display.update_display(self.maze, self.curr_pos, self.curr_path, self.invalid)
+
     def move(self, position):
         """Sets pathfinder curr_pos to position."""
         if self.mode == FULL:
             pass
         self.curr_pos = position
-        self.display.update_display(self.maze, self.invalid, self.curr_pos)
+        self.update_display()
         self.display.print_display()
 
     def reverse(self, direction):
@@ -140,11 +144,12 @@ class PathfinderBot:
         if self.mode == RANDOM:
             sleep(0.1)
         path = path + [node]
+        self.curr_path = path
         self.move(path[-1])
     
-        self.display.update_display(self.maze, self.invalid, self.curr_pos)
+        self.update_display()
         self.update_surroundings(node)
-        self.display.update_display(self.maze, self.invalid, self.curr_pos)
+        self.update_display()
         
         if node == self.end_node or node in self.end_path:
             return path 

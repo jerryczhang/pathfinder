@@ -10,23 +10,33 @@ FULL   = 3
 class PathfinderBot:
     """Represents the pathfinder bot.""" 
 
-    def __init__(self, mode, end_node):
+    def __init__(self, mode, end_node, verbose=1):
         """Initializes the robot, display, maze, and end_node.
 
         Parameters:
             mode: The operating mode of the robot--can be MANUAL, RANDOM, SENSOR, or FULL
             end_node: The target node of the maze that the robot is reaching
-
+            verbose: Indicates how much detail to print
         """
         self.mode = mode
         self.display = interface.Display(end_node)
         self.maze = {}
         self.end_path = {}
         self.end_node = end_node
+        self.verbose = verbose
 
     def update_display(self):
         """Calls display.update_display(), passing in instance variables."""
-        self.display.update_display(self.maze, self.curr_pos, self.curr_path, self.invalid)
+        if self.verbose >= 1:
+            self.display.update_display(self.maze, self.curr_pos, self.curr_path, self.invalid)
+
+    def print_display(self):
+        """Calls display.print_display()"""
+        if self.verbose >= 1:
+            self.display.print_display()
+        if self.verbose >= 2:
+            for node, paths in self.maze.items():
+                print(str(node).ljust(9) + ":  " + str(paths))
 
     def move(self, position):
         """Sets pathfinder curr_pos to position."""
@@ -34,7 +44,7 @@ class PathfinderBot:
             pass
         self.curr_pos = position
         self.update_display()
-        self.display.print_display()
+        self.print_display()
 
     def reverse(self, direction):
         """Reverses the given compass direction (n, e, s, w)."""
@@ -149,7 +159,7 @@ class PathfinderBot:
     
         self.update_surroundings(node)
         self.update_display()
-        self.display.print_display()
+        self.print_display()
         
         if node == self.end_node or node in self.end_path:
             return path 
@@ -201,7 +211,7 @@ class PathfinderBot:
 
 def main():
     """Main method, initializes robot and solves maze."""
-    pathfinder = PathfinderBot(MANUAL, (3, -3))
+    pathfinder = PathfinderBot(MANUAL, (3, -3), 2)
     while True:
         x_start = int(input("X coordinate of starting node:"))
         y_start = int(input("Y coordinate of starting node:"))

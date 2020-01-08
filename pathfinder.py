@@ -25,6 +25,23 @@ class PathfinderBot:
         self.end_node = end_node
         self.verbose = verbose
 
+    def input_maze(self, filename):
+        """Load in a predefined maze."""
+        f = open(filename, 'r')
+        for line in f:
+            data = line.split()
+            node = (int(data[0]), int(data[1]))
+            n_node = (node[0], node[1] - 1) if data[2] == '1' else "invalid" 
+            e_node = (node[0] + 1, node[1]) if data[3] == '1' else "invalid" 
+            s_node = (node[0], node[1] + 1) if data[4] == '1' else "invalid" 
+            w_node = (node[0] - 1, node[1]) if data[5] == '1' else "invalid" 
+            self.maze[node] = { 
+                    'n': n_node, 
+                    'e': e_node, 
+                    's': s_node, 
+                    'w': w_node, 
+            }
+
     def update_display(self):
         """Calls display.update_display(), passing in instance variables."""
         if self.verbose >= 1:
@@ -179,14 +196,16 @@ class PathfinderBot:
                     self.move(path[-1])
         return None
 
-    def start(self, start_node):
+    def start(self, start_node, predef_maze=''):
         """The starter method of the robot, navigates to the end from start_node.
 
         Can be called multiple times, where each run through the maze adds
         nodes to end_path. Upon reaching any node in end_path, stops the
         recursive algorithm and uses end_path to nagivate to the end.
         """
-        if start_node not in self.maze:
+        if predef_maze:
+            self.input_maze(predef_maze)
+        elif start_node not in self.maze:
             self.maze[start_node] = { 
                     'n': "unknown", 
                     'e': "unknown", 
@@ -211,11 +230,11 @@ class PathfinderBot:
 
 def main():
     """Main method, initializes robot and solves maze."""
-    pathfinder = PathfinderBot(MANUAL, (3, -3), 2)
+    pathfinder = PathfinderBot(MANUAL, (3, -3), 1)
     while True:
         x_start = int(input("X coordinate of starting node:"))
         y_start = int(input("Y coordinate of starting node:"))
-        path = pathfinder.start((x_start, y_start))
+        path = pathfinder.start((x_start, y_start), "mazes/maze1.txt")
         if path:
             print("Finished, path: " + str(path))
         else:

@@ -7,7 +7,7 @@ RANDOM = 1
 SENSOR = 2
 FULL   = 3
 
-class PathfinderBot:
+class Pathfinder:
     """Represents the pathfinder bot.""" 
 
     def __init__(self, mode, end_node, verbose=1):
@@ -229,7 +229,7 @@ class PathfinderBot:
 
 def main():
     """Main method, initializes robot and solves maze."""
-    pathfinder = PathfinderBot(MANUAL, (3, -3), 1)
+    pathfinder = Pathfinder(MANUAL, (3, -3), 1)
     while True:
         x_start = int(input("X coordinate of starting node:"))
         y_start = int(input("Y coordinate of starting node:"))

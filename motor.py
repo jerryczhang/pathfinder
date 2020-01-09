@@ -2,19 +2,14 @@ import RPi.GPIO as GPIO
 from time import sleep
 from hbridges import HBridge
 
-GPIO.setmode(GPIO.BCM)
-for pin in [6, 13, 19, 26]:
-        GPIO.setup(pin, GPIO.OUT)
-        GPIO.output(pin, False)
-
 class Motor():
     """Represents one motor, which is made up of two HBridges."""
 
-    def __init__(self, identifier, pin_dict_ac, pin_dict_bd):
+    def __init__(self, identifier, pins_ac, pins_bd):
         """Initialize a motor with two component HBridges."""
         self.identifier = identifier
-        self.hbridge_ac = HBridge(pin_dict_ac)
-        self.hbridge_bd = HBridge(pin_dict_bd)
+        self.hbridge_ac = HBridge(pins_ac[0], pins_ac[1])
+        self.hbridge_bd = HBridge(pins_bd[0], pins_bd[1])
         self.steps_per_degree = 1 / 1.8
         self.current_step = 0
 
@@ -56,9 +51,3 @@ class Motor():
                     self.hbridge_bd.toggle(1)
                 sleep(0.003)
 
-motor1 = Motor(1, {'In1': 6, 'In2': 13}, {'In1': 19, 'In2': 26})
-motor2 = Motor(2, {'In1': 10, 'In2': 9}, {'In1': 11, 'In2': 5})
-motor3 = Motor(3, {'In1': 4, 'In2': 17}, {'In1': 27, 'In2':22})
-motor4 = Motor(4, {'In1': 25, 'In2': 8}, {'In1': 7, 'In2': 12})
-
-GPIO.cleanup()

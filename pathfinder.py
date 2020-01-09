@@ -227,17 +227,3 @@ class Pathfinder:
         else:
             return None
 
-def main():
-    """Main method, initializes robot and solves maze."""
-    pathfinder = Pathfinder(MANUAL, (3, -3), 1)
-    while True:
-        x_start = int(input("X coordinate of starting node:"))
-        y_start = int(input("Y coordinate of starting node:"))
-        path = pathfinder.start((x_start, y_start), "mazes/maze1.txt")
-        if path:
-            print("Finished, path: " + str(path))
-        else:
-            print("Impossible maze")
-
-if __name__ == '__main__':
-    main()

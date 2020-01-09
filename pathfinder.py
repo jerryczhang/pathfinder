@@ -176,7 +176,6 @@ class PathfinderBot:
     
         self.update_surroundings(node)
         self.update_display()
-        self.print_display()
         
         if node == self.end_node or node in self.end_path:
             return path 

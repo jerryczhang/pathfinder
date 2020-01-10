@@ -7,7 +7,7 @@ class Robot:
     """Represents the motors and sensors of the robot."""
 
     def __init__(self):
-
+        """Initialize pins and motor objects."""
         GPIO.setup(16, GPIO.IN) # clock
         GPIO.setup(20, GPIO.OUT) # trigger
         GPIO.setup(21, GPIO.IN) # input
@@ -33,13 +33,13 @@ class Robot:
         distance = 0
         engage_motors = threading.Thread(target = run_motors(direction))
         #data = str(get_distance())
-        if direction == "North":
+        if direction == 'n':
             data_marker = 0
-        elif direction == "East":
+        elif direction == 'e':
             data_marker = 16
-        elif direction == "South":
+        elif direction == 's':
             data_marker = 32
-        elif direction == "West":
+        elif direction == 'w':
             data_marker = 48
         start_distance = int(data[datamarker:data_marker + 16], 2)
         engage_motors.start()

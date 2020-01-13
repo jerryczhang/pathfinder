@@ -42,16 +42,18 @@ class Pathfinder:
                     'w': w_node, 
             }
 
-    def update_display(self):
+    def update_display(self, end=False):
         """Calls display.update_display(), passing in instance variables."""
-        if self.verbose >= 1:
-            self.display.update_display(self.maze, self.curr_pos, self.curr_path, self.invalid)
+        if self.verbose == 1 and end == True:
+            self.display.update_display(self.maze, self.curr_path, self.invalid)
+        if self.verbose >= 2:
+            self.display.update_display(self.maze, self.curr_path, self.invalid, self.curr_pos)
 
     def print_display(self):
         """Calls display.print_display()"""
         if self.verbose >= 1:
             self.display.print_display()
-        if self.verbose >= 2:
+        if self.verbose >= 3:
             for node, paths in self.maze.items():
                 print(str(node).ljust(9) + ":  " + str(paths))
 
@@ -223,7 +225,11 @@ class Pathfinder:
                 next_node = self.end_path[self.curr_pos]
                 path.append(next_node)
                 self.move(next_node)
+            self.update_display(True)
+            self.print_display()
             return path
         else:
+            self.update_display(True)
+            self.print_display()
             return None
 

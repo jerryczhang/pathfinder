@@ -17,7 +17,7 @@ def main():
     while True:
         x_start = int(input("X coordinate of starting node:"))
         y_start = int(input("Y coordinate of starting node:"))
-        path = pathfinder.start((x_start, y_start), "mazes/maze1.txt")
+        path = pathfinder.start((x_start, y_start), "mazes/maze1.txt");
         if path:
             print("Finished, path: " + str(path))
         else:

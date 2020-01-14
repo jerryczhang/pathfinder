@@ -49,9 +49,11 @@ class Pathfinder:
         if self.verbose >= 2:
             self.display.update_display(self.maze, self.curr_path, self.invalid, self.curr_pos)
 
-    def print_display(self):
+    def print_display(self, end=False):
         """Calls display.print_display()"""
-        if self.verbose >= 1:
+        if self.verbose == 1 and end ==True:
+            self.display.print_display()
+        if self.verbose >= 2:
             self.display.print_display()
         if self.verbose >= 3:
             for node, paths in self.maze.items():
@@ -226,10 +228,10 @@ class Pathfinder:
                 path.append(next_node)
                 self.move(next_node)
             self.update_display(True)
-            self.print_display()
+            self.print_display(True)
             return path
         else:
             self.update_display(True)
-            self.print_display()
+            self.print_display(True)
             return None
 

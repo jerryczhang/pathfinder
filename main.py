@@ -14,12 +14,12 @@ def main():
     #GPIO.setmode(GPIO.BCM)
     #GPIO.setwarnings(False)
 
-    pathfinder = Pathfinder(MANUAL, (3, -3), 0)
+    pathfinder = Pathfinder(MANUAL, (3, -3), 1)
     while True:
         x_start = int(input("X coordinate of starting node:"))
         y_start = int(input("Y coordinate of starting node:"))
         time0 = time()
-        path = pathfinder.start((x_start, y_start), "mazes/maze1.txt")
+        path = pathfinder.start((x_start, y_start), "mazes/zig_zag.txt")
         if path:
             print("Finished, path: " + str(path))
         else:

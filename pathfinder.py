@@ -30,17 +30,18 @@ class Pathfinder:
         f = open(filename, 'r')
         for line in f:
             data = line.split()
-            node = (int(data[0]), int(data[1]))
-            n_node = (node[0], node[1] - 1) if data[2] == '1' else "invalid" 
-            e_node = (node[0] + 1, node[1]) if data[3] == '1' else "invalid" 
-            s_node = (node[0], node[1] + 1) if data[4] == '1' else "invalid" 
-            w_node = (node[0] - 1, node[1]) if data[5] == '1' else "invalid" 
-            self.maze[node] = { 
-                    'n': n_node, 
-                    'e': e_node, 
-                    's': s_node, 
-                    'w': w_node, 
-            }
+            if len(data) == 6:
+                node = (int(data[0]), int(data[1]))
+                n_node = (node[0], node[1] - 1) if data[2] == '1' else "invalid" 
+                e_node = (node[0] + 1, node[1]) if data[3] == '1' else "invalid" 
+                s_node = (node[0], node[1] + 1) if data[4] == '1' else "invalid" 
+                w_node = (node[0] - 1, node[1]) if data[5] == '1' else "invalid" 
+                self.maze[node] = { 
+                        'n': n_node, 
+                        'e': e_node, 
+                        's': s_node, 
+                        'w': w_node, 
+                }
 
     def update_display(self, end=False):
         """Calls display.update_display(), passing in instance variables."""
@@ -208,7 +209,7 @@ class Pathfinder:
         """
         if predef_maze:
             self.input_maze(predef_maze)
-        elif start_node not in self.maze:
+        if start_node not in self.maze:
             self.maze[start_node] = { 
                     'n': "unknown", 
                     'e': "unknown", 

@@ -10,7 +10,7 @@ FULL   = 3
 class Pathfinder:
     """Represents the pathfinder bot.""" 
 
-    def __init__(self, mode, end_node, verbose=1):
+    def __init__(self, mode, verbose=1, end_node=None, predef_maze=None):
         """Initializes the robot, display, maze, and end_node.
 
         Parameters:
@@ -19,18 +19,25 @@ class Pathfinder:
             verbose: Indicates how much detail to print
         """
         self.mode = mode
-        self.display = interface.Display(end_node)
         self.maze = {}
         self.end_path = {}
-        self.end_node = end_node
         self.verbose = verbose
+
+        if predef_maze:
+            self.input_maze(predef_maze)
+        else:
+            self.end_node = end_node
+            self.display = interface.Display(end_node)
 
     def input_maze(self, filename):
         """Load in a predefined maze."""
         f = open(filename, 'r')
         for line in f:
             data = line.split()
-            if len(data) == 6:
+            if len(data) == 2:
+                self.end_node = (int(data[0]), int(data[1]))
+                self.display = interface.Display(self.end_node)
+            elif len(data) == 6:
                 node = (int(data[0]), int(data[1]))
                 n_node = (node[0], node[1] - 1) if data[2] == '1' else "invalid" 
                 e_node = (node[0] + 1, node[1]) if data[3] == '1' else "invalid" 
@@ -207,8 +214,6 @@ class Pathfinder:
         nodes to end_path. Upon reaching any node in end_path, stops the
         recursive algorithm and uses end_path to nagivate to the end.
         """
-        if predef_maze:
-            self.input_maze(predef_maze)
         if start_node not in self.maze:
             self.maze[start_node] = { 
                     'n': "unknown", 

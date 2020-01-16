@@ -82,6 +82,7 @@ class Display:
         return xtransform, ytransform
 
     def update_node(self, maze, node):
+        """Update the maze around a specific node."""
         for direction in maze[node]:
             if maze[node][direction] == "invalid":
                 self.add_element(node, self.WALL, direction)

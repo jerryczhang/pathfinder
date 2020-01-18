@@ -77,8 +77,8 @@ class Pathfinder:
 
     def reverse(self, direction):
         """Reverses the given compass direction (n, e, s, w)."""
-        directions = ['n', 'e', 's', 'w', 'n', 'e', 's', 'w']
-        return directions[directions.index(direction) + 2]
+        directions = ['n', 'e', 's', 'w']
+        return directions[directions.index(direction) - 2]
 
     def random_success(self, rate):
         """Returns true with the frequency provided by rate."""
